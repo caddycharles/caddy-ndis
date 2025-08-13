@@ -98,11 +98,23 @@ This project enforces code quality through:
 - TypeScript strict mode
 - ESLint for code linting
 - Prettier for code formatting
-- Git hooks for pre-commit checks (to be configured)
+- Husky pre-commit hooks (auto-format, type-check, organize imports)
 
 ## Contributing
 
-This project follows a story-driven development approach. All features are implemented based on approved user stories in the `docs/stories/` directory.
+Please read our development guidelines before contributing:
+
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Development standards, housekeeping rules, and code organization
+- **[CLAUDE.md](./CLAUDE.md)** - Guidelines for AI assistants working on this codebase
+- **Story-driven development** - All features are implemented based on approved user stories in `docs/stories/`
+
+### Quick Start for Contributors
+
+1. Read `CONTRIBUTING.md` for our development standards
+2. Install dependencies: `npm install` (this sets up pre-commit hooks)
+3. Find your assigned story in `docs/stories/`
+4. Follow the housekeeping rules - no duplicate files, organized folders
+5. Commit your changes - pre-commit hooks will auto-format and validate
 
 ## License
 
