@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+.vite/
+public/
+convex/_generated/
+package-lock.json
+*.md
