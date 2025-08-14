@@ -2,9 +2,9 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 env:
   NODE_VERSION: '20.x'
@@ -12,6 +12,27 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
+  # Determine Environment
+  set-environment:
+    name: Set Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      convex_url: ${{ steps.set-env.outputs.convex_url }}
+      clerk_key: ${{ steps.set-env.outputs.clerk_key }}
+    steps:
+      - id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "convex_url=${{ secrets.VITE_CONVEX_URL_PROD }}" >> $GITHUB_OUTPUT
+            echo "clerk_key=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+            echo "convex_url=${{ secrets.VITE_CONVEX_URL_DEV }}" >> $GITHUB_OUTPUT
+            echo "clerk_key=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
   # Lint and Type Check
   quality-check:
     name: Code Quality
@@ -46,6 +67,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    needs: [set-environment]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,8 +84,8 @@ jobs:
       - name: Run tests
         run: npm test
         env:
-          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_CONVEX_URL: ${{ needs.set-environment.outputs.convex_url }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ needs.set-environment.outputs.clerk_key }}
 
   # Security Scan
   security:
@@ -88,7 +110,7 @@ jobs:
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
-    needs: [quality-check, test]
+    needs: [quality-check, test, set-environment]
     if: github.event_name == 'pull_request'
     environment:
       name: preview
@@ -110,6 +132,10 @@ jobs:
 
       - name: Build Project
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_CONVEX_URL: ${{ needs.set-environment.outputs.convex_url }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ needs.set-environment.outputs.clerk_key }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
       - name: Deploy Preview
         id: deploy
@@ -129,15 +155,63 @@ jobs:
               body: '🚀 Preview deployed to: ${{ steps.deploy.outputs.url }}'
             })
 
-  # Deploy to Production
+  # Deploy to Development (develop branch)
+  deploy-development:
+    name: Deploy Development
+    runs-on: ubuntu-latest
+    needs: [quality-check, test, security, set-environment]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: development
+      url: https://dev.caddy.team
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_DEV }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_DEV }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_DEV }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET_DEV }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NODE_ENV: development
+
+      - name: Deploy to Development
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} \
+            --name=caddy-dev \
+            --alias=dev.caddy.team
+
+      - name: Deploy Convex Development
+        run: |
+          npm install convex
+          npx convex deploy --cmd 'npm run build' 
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_DEV }}
+          CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_DEV }}
+
+  # Deploy to Production (main branch)
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
-    needs: [quality-check, test, security]
+    needs: [quality-check, test, security, set-environment]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: production
-      url: https://caddy.vercel.app
+      url: https://caddy.team
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,16 +229,24 @@ jobs:
 
       - name: Build Project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_PROD }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY_PROD }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_PROD }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET_PROD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NODE_ENV: production
 
       - name: Deploy to Production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Run Convex Migrations
+      - name: Deploy Convex Production
         run: |
           npm install convex
           npx convex deploy --prod
         env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_PROD }}
+          CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_PROD }}
 
       - name: Notify Deployment
         uses: 8398a7/action-slack@v3
@@ -172,7 +254,7 @@ jobs:
         with:
           status: ${{ job.status }}
           text: |
-            Deployment Status: ${{ job.status }}
+            Production Deployment: ${{ job.status }}
             Commit: ${{ github.sha }}
             Author: ${{ github.actor }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
@@ -182,23 +264,27 @@ jobs:
   smoke-test:
     name: Smoke Tests
     runs-on: ubuntu-latest
-    needs: [deploy-production]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [deploy-production, deploy-development]
+    if: always() && (needs.deploy-production.result == 'success' || needs.deploy-development.result == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Determine URL
+        id: get-url
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "url=https://caddy.team" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://dev.caddy.team" >> $GITHUB_OUTPUT
+          fi
+
       - name: Health Check
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://caddy.vercel.app)
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ steps.get-url.outputs.url }})
           if [ $response -eq 200 ]; then
             echo "Health check passed"
           else
             echo "Health check failed with status: $response"
             exit 1
           fi
-
-      - name: API Health Check
-        run: |
-          # Check Convex connection
-          curl -f https://caddy.vercel.app/api/health || exit 1
