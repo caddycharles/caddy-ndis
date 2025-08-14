@@ -1,7 +1,5 @@
 import { httpRouter } from "convex/server";
-// @ts-ignore - Generated types will be available when convex dev runs
 import { httpAction } from "./_generated/server";
-// @ts-ignore - Generated types will be available when convex dev runs
 import { internal } from "./_generated/api";
 import { Webhook } from "svix";
 
@@ -47,11 +45,12 @@ http.route({
     }
 
     // Handle the webhook
-    const eventType = evt.type;
+    const eventType = (evt as any).type;
 
     if (eventType === "user.created" || eventType === "user.updated") {
-      const { id, email_addresses, first_name, last_name, image_url } =
-        evt.data;
+      const { id, email_addresses, first_name, last_name, image_url } = (
+        evt as any
+      ).data;
 
       await ctx.runMutation(internal.users.upsertUser, {
         clerkId: id,
@@ -61,7 +60,7 @@ http.route({
         imageUrl: image_url,
       });
     } else if (eventType === "user.deleted") {
-      const { id } = evt.data;
+      const { id } = (evt as any).data;
 
       await ctx.runMutation(internal.users.deleteUser, {
         clerkId: id,

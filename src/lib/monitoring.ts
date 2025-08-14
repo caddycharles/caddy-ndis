@@ -31,7 +31,7 @@ class MonitoringService {
     if (this.config.sentryDsn && !this.config.isDevelopment) {
       try {
         // Dynamic import for optional dependency
-        // @ts-ignore - Optional dependency
+        // @ts-expect-error - Optional dependency
         const Sentry = await import("@sentry/react").catch(() => null);
         if (Sentry) {
           Sentry.init({
@@ -52,7 +52,7 @@ class MonitoringService {
     if (this.config.posthogKey && !this.config.isDevelopment) {
       try {
         // Dynamic import for optional dependency
-        // @ts-ignore - Optional dependency
+        // @ts-expect-error - Optional dependency
         const posthog = await import("posthog-js").catch(() => null);
         if (posthog?.default) {
           posthog.default.init(this.config.posthogKey, {
@@ -194,7 +194,7 @@ class MonitoringService {
 
     // Observe Largest Contentful Paint
     try {
-      const lcpObserver = new PerformanceObserver((list) => {
+      const lcpObserver = new window.PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
         this.trackPerformance("lcp", lastEntry.startTime);
@@ -206,7 +206,7 @@ class MonitoringService {
 
     // Observe First Input Delay
     try {
-      const fidObserver = new PerformanceObserver((list) => {
+      const fidObserver = new window.PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           this.trackPerformance("fid", entry.processingStart - entry.startTime);

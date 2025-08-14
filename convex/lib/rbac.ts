@@ -1,4 +1,3 @@
-// @ts-ignore - Generated types will be available when convex dev runs
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 import { ConvexError } from "convex/values";
 import { requireAuth } from "../auth";

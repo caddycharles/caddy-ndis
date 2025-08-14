@@ -58,8 +58,8 @@ function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.firstName || "User"}! Here's your overview for
-          today.
+          Welcome back, {user?.firstName || "User"}! Here&apos;s your overview
+          for today.
         </p>
       </div>
 

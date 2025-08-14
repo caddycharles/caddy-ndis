@@ -1,3 +1,4 @@
+import * as React from "react";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
@@ -18,7 +19,7 @@ if (!clerkPubKey) {
   console.error(
     "VITE_CLERK_PUBLISHABLE_KEY is not set in environment variables"
   );
-  console.log("Available env vars:", Object.keys(import.meta.env));
+  console.warn("Available env vars:", Object.keys(import.meta.env));
 }
 
 export const Route = createRootRoute({

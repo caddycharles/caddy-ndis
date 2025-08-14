@@ -19,7 +19,7 @@ export const processLeaveAccruals = internalMutation({
     // 4. Create leaveAccruals transaction records
     // 5. Update leaveBalances with new amounts
     // 6. Set next accrual dates
-    console.log("Processing leave accruals...");
+    // TODO: Remove debug log("Processing leave accruals...");
     return { processed: 0 };
   },
 });
@@ -33,7 +33,7 @@ export const checkPlanExpiry = internalMutation({
     // 2. Check if endDate is within 90 days
     // 3. Update status to "expiring_soon" if needed
     // 4. Create notifications for coordinators
-    console.log("Checking plan expiry...");
+    // TODO: Remove debug log("Checking plan expiry...");
     return { flagged: 0 };
   },
 });
@@ -48,7 +48,7 @@ export const checkBudgetAlerts = internalMutation({
     // 3. Check against alert thresholds
     // 4. Update hasAlert flag
     // 5. Calculate projected overspend
-    console.log("Checking budget alerts...");
+    // TODO: Remove debug log("Checking budget alerts...");
     return { alerts: 0 };
   },
 });
@@ -63,7 +63,7 @@ export const checkIncidentReminders = internalMutation({
     // 3. Flag incomplete investigations
     // 4. Monitor external reporting deadlines
     // 5. Update incident statuses
-    console.log("Checking incident reminders...");
+    // TODO: Remove debug log("Checking incident reminders...");
     return { reminders: 0 };
   },
 });
@@ -77,7 +77,7 @@ export const processDataRetention = internalMutation({
     // 2. Archive documents past retention
     // 3. Clean up expired sessions
     // 4. Generate compliance report
-    console.log("Processing data retention...");
+    // TODO: Remove debug log("Processing data retention...");
     return { archived: 0 };
   },
 });
@@ -92,7 +92,7 @@ export const updateAvailabilityPatterns = internalMutation({
     // 3. Expire old patterns
     // 4. Process recurring exceptions
     // 5. Sync with leave requests
-    console.log("Updating availability patterns...");
+    // TODO: Remove debug log("Updating availability patterns...");
     return { updated: 0 };
   },
 });
@@ -106,7 +106,7 @@ export const processAnnouncements = internalMutation({
     // 2. Publish if publishDate reached
     // 3. Archive if expiryDate passed
     // 4. Send reminders for unread critical announcements
-    console.log("Processing announcements...");
+    // TODO: Remove debug log("Processing announcements...");
     return { processed: 0 };
   },
 });
@@ -120,7 +120,7 @@ export const checkDocumentExpiry = internalMutation({
     // 2. Flag documents expiring within 30 days
     // 3. Update status to "expired" if past expiry
     // 4. Create notifications for document owners
-    console.log("Checking document expiry...");
+    // TODO: Remove debug log("Checking document expiry...");
     return { expiring: 0 };
   },
 });
