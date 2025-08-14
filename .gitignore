@@ -33,6 +33,9 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.staging
+.env.development
 
 # Convex
 .convex/
@@ -57,3 +60,4 @@ Thumbs.db
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+.vercel

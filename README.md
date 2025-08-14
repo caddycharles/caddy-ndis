@@ -6,8 +6,8 @@ A modern, real-time platform for NDIS support coordination, built with TanStack 
 
 - **Frontend**: TanStack Start (React) with TypeScript
 - **Backend**: Convex (real-time database and serverless functions)
-- **Styling**: Tailwind CSS + Shadcn UI (to be configured)
-- **Authentication**: Clerk (to be configured)
+- **Styling**: Tailwind CSS + Shadcn UI (to be configured in Story 1.3)
+- **Authentication**: Clerk (configured in Story 1.2)
 - **Build Tool**: Vite
 
 ## Getting Started
@@ -26,8 +26,8 @@ A modern, real-time platform for NDIS support coordination, built with TanStack 
 
 2. **Set up environment variables**:
    - Copy `.env.local` and add your keys
-   - Add your Convex deployment URL (obtained when running Convex dev)
-   - Add Clerk keys (will be configured in Story 1.2)
+   - Add your Convex deployment URL (obtained when running `npx convex dev`)
+   - Add Clerk keys from your Clerk dashboard
 
 3. **Start the development servers**:
    ```bash
@@ -85,11 +85,17 @@ docs/                    # Project documentation
 Required environment variables in `.env.local`:
 
 ```bash
-# Convex deployment URL
-CONVEX_URL=your_convex_deployment_url
+# Convex deployment URL (with VITE_ prefix for client-side access)
+VITE_CONVEX_URL=your_convex_deployment_url
 
-# Clerk authentication (Story 1.2)
-CLERK_PUBLISHABLE_KEY=your_clerk_key
+# Clerk authentication (with VITE_ prefix for client-side access)
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+
+# Clerk backend keys for Convex integration
+CLERK_SECRET_KEY=your_clerk_secret_key
+CLERK_DOMAIN=https://your-domain.clerk.accounts.dev
+CLERK_APP_ID=clerk
+CLERK_WEBHOOK_SECRET=your_webhook_secret
 ```
 
 ## Code Quality
