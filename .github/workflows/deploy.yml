@@ -191,14 +191,14 @@ jobs:
 
       - name: Deploy to Development
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} \
-            --name=caddy-dev \
-            --alias=dev.caddy.team
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "Deployed to: $url"
+          vercel alias set $url dev.caddy.team --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Convex Development
         run: |
           npm install convex
-          npx convex deploy --cmd 'npm run build'
+          npx convex deploy --yes
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_DEV }}
           CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_DEV }}
@@ -243,7 +243,7 @@ jobs:
       - name: Deploy Convex Production
         run: |
           npm install convex
-          npx convex deploy --prod
+          npx convex deploy --yes
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY_PROD }}
           CONVEX_URL: ${{ secrets.VITE_CONVEX_URL_PROD }}
