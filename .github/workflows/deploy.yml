@@ -193,7 +193,7 @@ jobs:
         run: |
           url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "Deployed to: $url"
-          vercel alias set $url dev.caddy.team --token=${{ secrets.VERCEL_TOKEN }}
+          echo "Development URL: $url" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy Convex Development
         run: |
